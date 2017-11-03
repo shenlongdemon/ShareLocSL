@@ -29,3 +29,13 @@ Error: bundling failed: "TransformError: /Users/ntlong/ShareLocSL/ShareLocSL/ind
 Remove build folder in android/app
 npm install -g react-native-git-upgrade
 ```
+
+
+
+
+
+
+Open Shake menu
+```
+adb shell input keyevent 82
+```

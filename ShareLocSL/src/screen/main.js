@@ -1,8 +1,8 @@
 // open shake menu : adb shell input keyevent 82
 import React, { Component } from 'react';
 import BaseScreen from './basescreen';
-import MapView from 'react-native-map-clustering';
-import Maps from 'react-native-maps';
+//import MapView from 'react-native-map-clustering';
+import MapView from 'react-native-maps';
 import Marker from 'react-native-maps';
 import KeyGen from '../functions/keygen'
 import Geometry from '../functions/geometry'
@@ -176,7 +176,7 @@ export default class MainScreen extends BaseScreen {
         this.state.directions.map((direction, idx) => (
             
            
-            markers.push (<Marker
+            markers.push (<MapView.Marker
                 draggable
                 coordinate={direction.coordinate}
                 title={direction.title}
@@ -200,7 +200,7 @@ export default class MainScreen extends BaseScreen {
             var coors = [this.state.directions[i].coordinate, this.state.directions[i + 1].coordinate];
             var id = KeyGen.uuid_v4();
             routes.push (
-                <Maps.Polyline
+                <MapView.Polyline
                     key={id}
                     coordinates={coors}
                     strokeColor="#000"
@@ -214,7 +214,7 @@ export default class MainScreen extends BaseScreen {
 
     }
     onRegionChange(region) {
-        this.setState({ region });
+        this.setState({});
     }
     render() {
         return (
@@ -227,16 +227,15 @@ export default class MainScreen extends BaseScreen {
                     showsUserLocation={true}
                     showsMyLocationButton={true}
                     style={styles.map}
-                    region={this.state.region}
-                    //onRegionChange={this.onRegionChange}
-                >
+                    initialRegion={this.state.region}
+                >                    
                     {                      
                         this.renderMarkersForDirection()                        
                     }
                     {                      
                         this.renderRoutesForDirection()                        
                     }
-                   
+
                 </MapView>
             </View>
         );

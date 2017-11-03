@@ -9,11 +9,10 @@ import {
 } from 'react-native';
 
 import MainScreen from './screen/main';
-import MakeDirectionScreen from './screen/makedirection';
+
 import { StackNavigator } from 'react-navigation';
 const ShareLocSL = StackNavigator({
-  Main: { screen: MainScreen },
-  MakeDirection: { screen: MakeDirectionScreen }
+  Main: { screen: MainScreen }
 });
 
 // if you are using create-react-native-app you don't need this line
