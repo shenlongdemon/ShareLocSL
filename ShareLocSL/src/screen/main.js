@@ -1,5 +1,5 @@
 // open shake menu : adb shell input keyevent 82
-import React, { Component } from 'react';
+import React from 'react';
 import BaseScreen from './basescreen';
 //import MapView from 'react-native-map-clustering';
 import MapView from 'react-native-maps';
@@ -29,7 +29,13 @@ export default class MainScreen extends BaseScreen {
         console.log("constructor main");
         this.getCurrentPosition();
         this.state = {
-            directions:[],
+            direction:{
+                id: "",
+                name: "",
+                description: "",
+                points:[],
+                notes:[]
+            },
             region: {
                 latitude: 37.78825,
                 longitude: -122.4324,
@@ -78,49 +84,61 @@ export default class MainScreen extends BaseScreen {
         return direction;
     }
     addDirection(coordinate){
-
+       
         var direction = this.createDirection(coordinate);
-        if (this.state.directions == undefined){
-            this.state.directions = [];
+        if (this.state.direction == undefined){
+            this.state.direction = {
+                id: "",
+                name: "",
+                points:[],
+                notes:[]
+            };
         }
-        if (this.state.directions.length == 0){
+        if (this.state.direction.points == undefined){
+            this.state.direction.points = [];
+        }
+        alert("0" + this.state.direction.points.length);
+       
+        if (this.state.direction.points.length == 0){
             direction.title = "start";
             direction.description = "start - source";
             this.setState({
-                directions: [                    
-                    direction
-                ],
+                direction: {                    
+                    points:[direction]
+                }
             });
         }
-        else if (this.state.directions.length == 1){
+        else if (this.state.direction.points.length == 1){
             direction.title = "end";
             direction.description = "end - destination";
             direction.index = MAX_INDEX_DIRECTION;
-            var middleCoor = Geometry.getMiddle(this.state.directions[0].coordinate, coordinate);
+            var middleCoor = Geometry.getMiddle(this.state.direction.points[0].coordinate, coordinate);
             var middle = this.createDirection(middleCoor);
             middle.isModified = false;
             middle.index = parseInt(direction.index / 2);
-            middle.title = "mid " + middle.index;
-            middle.description = "mid - " + this.state.directions[0].key + " - " + direction.key;           
+            middle.title = "";
+            middle.description = "";           
             this.setState({
-                directions:  [...this.state.directions,
-                    middle,
-                    direction]
+                direction:  {
+                    points:[... this.state.direction.points, 
+                        middle,
+                        direction]
+                } 
             });
-        }
+        }        
     }
     getPreviousDirections(index){
-        var previous =  this.state.directions.filter(item => item.index < index);
+        var previous =  this.state.direction.points.filter(item => item.index < index);
         return previous;
     }
     getNextDirections(index){
-        var next =  this.state.directions.filter(item => item.index > index);
+        var next =  this.state.direction.points.filter(item => item.index > index);
         return next;
     }
     directionDragEnd(direction, newCoordinate){
         direction.isModified = true;
         direction.coordinate = newCoordinate;
-        var filteredArray = this.state.directions.filter(item => item.id !== direction.id);
+        var filteredArray = this.state.direction.points.filter(item => item.id !== direction.id);
         var a = filteredArray.length;
         var list =  [
             ...filteredArray,
@@ -157,8 +175,7 @@ export default class MainScreen extends BaseScreen {
                 list.push(mid);
             }
             // if next marker is not modified yet then it mean the next marker is just created between 
-            // current marker and the another next marker, so we just update coordinate of next marker
-            
+            // current marker and the another next marker, so we just update coordinate of next marker            
             else{
                 let next2 =  nexts[1];
                 list = list.filter(item => item.id !== next.id);
@@ -168,13 +185,14 @@ export default class MainScreen extends BaseScreen {
             }
         }
         this.setState({
-            directions: list.sort(function(a, b){return a.index - b.index;})
+            direction:{
+                points: list.sort(function(a, b){return a.index - b.index;})
+            } 
         });
     }
     renderMarkersForDirection(){
         var markers = [];
-        this.state.directions.map((direction, idx) => (
-            
+        this.state.direction.points.map((direction, idx) => (           
            
             markers.push (<MapView.Marker
                 draggable
@@ -192,12 +210,13 @@ export default class MainScreen extends BaseScreen {
 
     }
     renderRoutesForDirection(){
-        var routes = [];        
-        var count =  this.state.directions.length - 1;
+        var routes = [];    
+        var points = this.state.direction.points;
+        var count = points.length - 1;
         var i = 0;
 
         for(i ; i < count; i++){
-            var coors = [this.state.directions[i].coordinate, this.state.directions[i + 1].coordinate];
+            var coors = [points[i].coordinate, points[i + 1].coordinate];
             var id = KeyGen.uuid_v4();
             routes.push (
                 <MapView.Polyline
@@ -212,15 +231,11 @@ export default class MainScreen extends BaseScreen {
        
         return routes;
 
-    }
-    onRegionChange(region) {
-        this.setState({});
-    }
+    }    
     render() {
         return (
             <View style={{ flex: 1 }}>
                 <MapView
-
                     provider={this.props.provider}
                     onPress={(e) => this.onMapPress(e)}
                     enableClustering={false}
@@ -235,8 +250,8 @@ export default class MainScreen extends BaseScreen {
                     {                      
                         this.renderRoutesForDirection()                        
                     }
-
                 </MapView>
+
             </View>
         );
     }
